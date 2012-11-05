@@ -2208,11 +2208,10 @@ class TextCtrl(wx.TextCtrl):
 
 class HorizontalGradientGauge(wx.Panel):
 
-    def __init__(self, *args, **kwargs):
-        wx.Panel.__init__(self, *args, **kwargs)
+    def __init__(self, parent, id = -1, value = 0, **kwargs):
+        wx.Panel.__init__(self, parent, id, **kwargs)
         
-        self.value = 0
-
+        self.value = value
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
         

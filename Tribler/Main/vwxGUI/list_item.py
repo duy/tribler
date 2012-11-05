@@ -3,7 +3,8 @@ import wx
 import sys
 import json
 from Tribler.Core.CacheDB.sqlitecachedb import forceDBThread
-from Tribler.Main.vwxGUI.widgets import NativeIcon, BetterText as StaticText, _set_font, TagText
+from Tribler.Main.vwxGUI.widgets import NativeIcon, BetterText as StaticText, _set_font, TagText,\
+    HorizontalGradientGauge
 from Tribler.Main.vwxGUI.GuiUtility import GUIUtility
 from Tribler.Main.vwxGUI.IconsManager import IconsManager, SMALL_ICON_MAX_DIM
 from list_body import *
@@ -591,7 +592,8 @@ class AvantarItem(ListItem):
         
             for button in self.additionalButtons:
                 hSizer.Add(button, 0, wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
-                button.Show(False)
+                if isinstance(button, wx.Button):
+                    button.Show(False)
                 
             self.moreButton.Show(False)
             vSizer.Add(hSizer, 0, wx.ALIGN_RIGHT)
@@ -611,7 +613,8 @@ class AvantarItem(ListItem):
                 self.moreButton.Show(color == self.list_selected)
                 
             for button in self.additionalButtons:
-                button.Show(color == self.list_selected)
+                if isinstance(button, wx.Button):
+                    button.Show(color == self.list_selected)
             
     def OnChange(self):
         self.parent_list.OnChange()
@@ -735,6 +738,10 @@ class ModificationActivityItem(AvantarItem):
             button = wx.Button(self, -1, 'Open Torrent', style = wx.BU_EXACTFIT)
             button.Bind(wx.EVT_BUTTON, self.ShowTorrent)
             self.additionalButtons.append(button)
+            
+        hg = HorizontalGradientGauge(self, -1, 1 - modification.spamScore)
+        hg.SetMinSize((100, -1))
+        self.additionalButtons.append(hg)
         
         im = IconsManager.getInstance()
         self.avantar = im.get_default('MODIFICATION',SMALL_ICON_MAX_DIM)
@@ -757,7 +764,6 @@ class ModificationItem(AvantarItem):
         modification = self.original_data
 
         self.body = modification.value
-        
         im = IconsManager.getInstance()
         if modification.moderation:
             moderation = modification.moderation
@@ -772,6 +778,10 @@ class ModificationItem(AvantarItem):
                 button = wx.Button(self, -1, 'Revert Modification', style = wx.BU_EXACTFIT)
                 button.Bind(wx.EVT_BUTTON, self.RevertModification)
                 self.additionalButtons.append(button)
+                
+        hg = HorizontalGradientGauge(self, -1, 1 - modification.spamScore)
+        hg.SetMinSize((100, -1))
+        self.additionalButtons.append(hg)
         
         AvantarItem.AddComponents(self, leftSpacer, rightSpacer)
         

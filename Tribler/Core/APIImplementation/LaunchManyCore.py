@@ -12,6 +12,7 @@ import time as timemod
 from threading import Event,Thread,enumerate as enumerate_threads, currentThread
 from traceback import print_exc, print_stack
 import traceback
+from Tribler.community.gossiplearningframework.community import GossipLearningCommunity
 try:
     prctlimported = True
     import prctl
@@ -150,7 +151,7 @@ class TriblerLaunchMany(Thread):
             self.peer_db.registerConnectionUpdater(self.session)
             self.torrent_db     = TorrentDBHandler.getInstance()
             torrent_collecting_dir = os.path.abspath(config['torrent_collecting_dir'])
-            self.torrent_db.register(Category.getInstance(),torrent_collecting_dir)
+            self.torrent_db.register(Category.getInstance(), torrent_collecting_dir)
             self.mypref_db      = MyPreferenceDBHandler.getInstance()
             self.friend_db      = FriendDBHandler.getInstance()
             self.bartercast_db  = BarterCastDBHandler.getInstance()
@@ -329,6 +330,7 @@ class TriblerLaunchMany(Thread):
                 schedule.append((SearchCommunity, (self.session.dispersy_member,), {}))
                 schedule.append((EffortCommunity, (), {}))
                 schedule.append((AllChannelCommunity, (self.session.dispersy_member,), {}))
+                schedule.append((GossipLearningCommunity, (self.session.dispersy_member,), {}))
                 schedule.append((ChannelCommunity, (), {}))
 
             for cls, args, kargs in schedule:

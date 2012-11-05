@@ -22,6 +22,7 @@ import sys
 from Tribler.dispersy.dispersy import Dispersy
 from time import time
 from Tribler.community.channel.payload import ModerationPayload
+from Tribler.community.gossiplearningframework.community import GossipLearningCommunity
 
 if __debug__:
     from Tribler.dispersy.dprint import dprint
@@ -151,6 +152,10 @@ class ChannelCommunity(Community):
 
             from Tribler.community.allchannel.community import ChannelCastDBStub
             self._channelcast_db = ChannelCastDBStub(self._dispersy)
+        
+        for community in self.dispersy.get_communities():
+            if isinstance(community, GossipLearningCommunity):
+                self._gossip_community = community
         
     def initiate_meta_messages(self):
         if self.integrate_with_tribler:
@@ -685,6 +690,9 @@ class ChannelCommunity(Community):
                     print >> sys.stderr, "CANNOT FIND channeltorrent_id", modifying_dispersy_id
                 channeltorrentDict[modifying_dispersy_id] = channeltorrent_id
                 
+                if modification_type in ['name', 'description']:
+                    self._gossip_community.user_input(False, modification_value)
+                
             elif message_name == u"playlist":
                 playlist_id = self._get_playlist_id_from_message(modifying_dispersy_id)
                 playlistDict[modifying_dispersy_id] = playlist_id
@@ -982,10 +990,14 @@ class ChannelCommunity(Community):
             if channeltorrent_id:
                 modification_type = cause_message.payload.modification_type
                 modification_type_id = self._modification_types[modification_type]
+                modification_value = message.payload.modification_value
                 
                 latest = self._get_latest_modification_from_torrent_id(channeltorrent_id, modification_type_id)
                 if not latest or latest.packet_id == cause_message.packet_id:
                     updateTorrent = True
+                    
+                if modification_type in ['name', 'description']:
+                    self._gossip_community.user_input(True, modification_value)
                 
             self._channelcast_db.on_moderation(self._channel_id, dispersy_id, peer_id, by_peer_id, cause, message.payload.text, message.payload.timestamp, message.payload.severity)
             

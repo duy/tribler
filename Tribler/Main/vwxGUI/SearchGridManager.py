@@ -43,6 +43,7 @@ from Tribler.community.channel.preview import PreviewChannelCommunity
 from Tribler.community.search.community import SearchCommunity
 from Tribler.Core.Swift.SwiftDef import SwiftDef
 from Tribler.Core.RemoteTorrentHandler import RemoteTorrentHandler
+from Tribler.community.gossiplearningframework.community import GossipLearningCommunity
 
 DEBUG = False
 
@@ -1205,18 +1206,18 @@ class ChannelManager:
         self.torrentsearch_manager = torrentsearch_manager
         self.library_manager = library_manager
         self.remote_th = RemoteTorrentHandler.getInstance()
+        self._gossip_community = None
 
         if Dispersy.has_instance():
             self.dispersy = Dispersy.get_instance()
             self.dispersy.database.attach_commit_callback(self.channelcast_db._db.commitNow)
-
         else:
             def dispersy_started(subject,changeType,objectID):
                 self.dispersy = Dispersy.get_instance()
                 self.dispersy.database.attach_commit_callback(self.channelcast_db._db.commitNow)
                 
                 self.session.remove_observer(dispersy_started)
-            
+                
             self.session.add_observer(dispersy_started,NTFY_DISPERSY,[NTFY_STARTED])
         
     def set_gridmgr(self,gridmgr):
@@ -1441,6 +1442,14 @@ class ChannelManager:
     def getRecentModerationsFromPlaylist(self, playlist, limit = None):
         data = self.channelcast_db.getRecentModerationsFromPlaylist(playlist.id, MODERATION_REQ_COLUMNS, limit)
         return self._createModerations(data)
+    
+    def getSpamScore(self, modification):
+        if not self._gossip_community:
+            for community in self.dispersy.get_communities():
+                if isinstance(community, GossipLearningCommunity):
+                    self._gossip_community = community
+        
+        return self._gossip_community.predict_input(modification.value)
     
     def _createModerations(self, hits):
         returnList = []
