@@ -990,7 +990,7 @@ class ChannelCommunity(Community):
             if channeltorrent_id:
                 modification_type = cause_message.payload.modification_type
                 modification_type_id = self._modification_types[modification_type]
-                modification_value = message.payload.modification_value
+                modification_value = cause_message.payload.modification_value
                 
                 latest = self._get_latest_modification_from_torrent_id(channeltorrent_id, modification_type_id)
                 if not latest or latest.packet_id == cause_message.packet_id:
