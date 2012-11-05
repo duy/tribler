@@ -588,10 +588,10 @@ class AvantarItem(ListItem):
         
         if len(self.additionalButtons) > 0:
             hSizer = wx.BoxSizer(wx.HORIZONTAL)
-            hSizer.Add(self.moreButton, 0, wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+            hSizer.Add(self.moreButton, 0, wx.RESERVE_SPACE_EVEN_IF_HIDDEN|wx.ALIGN_CENTER_VERTICAL)
         
             for button in self.additionalButtons:
-                hSizer.Add(button, 0, wx.RESERVE_SPACE_EVEN_IF_HIDDEN)
+                hSizer.Add(button, 0, wx.RESERVE_SPACE_EVEN_IF_HIDDEN|wx.ALIGN_CENTER_VERTICAL|wx.LEFT, 3)
                 if isinstance(button, wx.Button):
                     button.Show(False)
                 

@@ -1,5 +1,5 @@
 from models import GossipLearningModel
-
+import numpy as np
 if __debug__:
     from Tribler.dispersy.dprint import dprint
 
@@ -21,7 +21,7 @@ class P2PegasosModel(GossipLearningModel):
         lam = 0.0001
         rate = 1.0 / (self.age * lam)
 
-        is_sv = label * sum([self.w[i] * x[i] for i in range(len(self.w))]) < 1.0
+        is_sv = label * np.sum([self.w[i] * x[i] for i in range(len(self.w))]) < 1.0
         for i in range(len(self.w)):
             if is_sv:
                 self.w[i] = (1.0 - 1.0 / self.age) * self.w[i] + rate * label * x[i]
@@ -33,8 +33,8 @@ class P2PegasosModel(GossipLearningModel):
         Compute the inner product of the hyperplane and the instance as a
         prediction.
         """
-        wx = sum([self.w[i] * x[i] for i in range(len(self.w))])
-        return 1.0 if any(wx) >= 0.0 else 0.0
+        wx = np.sum([self.w[i] * x[i] for i in range(len(self.w))])
+        return 1.0 if wx >= 0.0 else 0.0
 
     def merge(self, model):
         self.age = max(self.age, model.age)

@@ -24,6 +24,8 @@ from models.p2pegasos import P2PegasosModel
 from Tribler.community.gossiplearningframework.youtube_classifier.features import create_features,\
     load_words
 from Tribler.community.gossiplearningframework.youtube_classifier.dict_vectorizer import DictVectorizer
+from Tribler.community.gossiplearningframework.database import GossipDatabase
+from traceback import print_exc
 
 # Send messages every 1 seconds.
 DELAY=1.0
@@ -59,17 +61,30 @@ class GossipLearningCommunity(Community):
         if __debug__: dprint('gossiplearningcommunity ' + self._cid.encode("HEX"))
         
         load_words()
-
-        # Periodically we will send our data to other node(s).
-        self._dispersy.callback.register(self.active_thread, delay=INITIALDELAY)
+        
+        self._database = GossipDatabase.get_instance(self._dispersy)
+        
+        # These should be loaded from a database, x and y are stored only locally
+        self._x = None
+        self._y = None
+        
+        try:
+            nr_local_records = self._database.execute(u"SELECT count(*) FROM input").next()
+            if nr_local_records[0]:
+                self._x = []
+                self._y = []
+                
+                for x, y in self._database.execute(u"SELECT x, y FROM input"):
+                    self._x.append(np.loads(str(x)))
+                    self._y.append(int(y))
+        except:
+            print_exc()
 
         # Stats
         self._msg_count = 0
 
-        # These should be loaded from a database, x and y are stored only locally
-        self._x = None
-        self._y = None
-
+        # Periodically we will send our data to other node(s).
+        self._dispersy.callback.register(self.active_thread, delay=INITIALDELAY)
         self._model_queue = deque(maxlen=MODEL_QUEUE_SIZE)
 
         # Initial model
@@ -216,6 +231,8 @@ class GossipLearningCommunity(Community):
         """
         self._x.append(feats)
         self._y.append(1 if is_spam else 0)
+        
+        self._database.execute(u"INSERT INTO input (x, y) VALUES (?, ?)",(buffer(feats.dumps()), 1 if is_spam else 0))
         
     def predict_input(self, text):
         """Returns True if TEXT is spam"""
