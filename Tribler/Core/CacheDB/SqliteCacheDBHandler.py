@@ -1290,7 +1290,8 @@ class TorrentDBHandler(BasicDBHandler):
     def getTorrentsFromTracker(self, tracker, max_last_check, limit):
         sql = "SELECT infohash FROM TorrentTracker, Torrent WHERE Torrent.torrent_id = TorrentTracker.torrent_id AND tracker = ? AND last_check < ? ORDER BY RANDOM() LIMIT ?"
         infohashes = self._db.fetchall(sql, (tracker, max_last_check, limit))
-        return [str2bin(infohash) for infohash, in infohashes]
+        if infohashes:
+            return [str2bin(infohash) for infohash, in infohashes]
     
     def getPopularTrackers(self, limit = 10):
         sql = "SELECT DISTINCT tracker FROM torrenttracker WHERE ignored_times = 0 ORDER BY last_check DESC LIMIT ?"
