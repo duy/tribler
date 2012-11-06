@@ -211,7 +211,7 @@ class GossipLearningCommunity(Community):
         DictVectorizer's transform function.
         """
         v = DictVectorizer(sparse=False)
-        feats = v.fit_transform(feats)
+        feats = v.fit_transform(feats)[0]
         
         """
         3. We need to update self._x and self._y. Make sure they are lists and not
@@ -249,7 +249,7 @@ class GossipLearningCommunity(Community):
         DictVectorizer's transform function (same as step 2 above).
         """
         v = DictVectorizer(sparse=False)
-        feats = v.fit_transform(feats)
+        feats = v.fit_transform(feats)[0]
         
         """
         3. Use self.predict(x) to predict for a vector x. The learning is done by
