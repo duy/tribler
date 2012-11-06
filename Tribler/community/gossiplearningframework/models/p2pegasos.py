@@ -3,6 +3,17 @@ import numpy as np
 if __debug__:
     from Tribler.dispersy.dprint import dprint
 
+def safe_sparse_dot(a, b, dense_output=False):
+    """Dot product that handle the sparse matrix case correctly"""
+    from scipy import sparse
+    if sparse.issparse(a) or sparse.issparse(b):
+        ret = a * b
+        if dense_output and hasattr(ret, "toarray"):
+            ret = ret.toarray()
+        return ret
+    else:
+        return np.dot(a, b)
+
 class P2PegasosModel(GossipLearningModel):
 
     def __init__(self):
@@ -21,7 +32,7 @@ class P2PegasosModel(GossipLearningModel):
         lam = 0.0001
         rate = 1.0 / (self.age * lam)
 
-        is_sv = label * np.sum([self.w[i] * x[i] for i in range(len(self.w))]) < 1.0
+        is_sv = label * np.sum(safe_sparse_dot(self.w, x)) < 1.0
         for i in range(len(self.w)):
             if is_sv:
                 self.w[i] = (1.0 - 1.0 / self.age) * self.w[i] + rate * label * x[i]
@@ -33,7 +44,7 @@ class P2PegasosModel(GossipLearningModel):
         Compute the inner product of the hyperplane and the instance as a
         prediction.
         """
-        wx = np.sum([self.w[i] * x[i] for i in range(len(self.w))])
+        wx = np.sum(safe_sparse_dot(self.w, x))
         return 1.0 if wx >= 0.0 else 0.0
 
     def merge(self, model):
