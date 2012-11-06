@@ -32,12 +32,18 @@ class P2PegasosModel(GossipLearningModel):
         lam = 0.0001
         rate = 1.0 / (self.age * lam)
 
+        import sys
+        print >> sys.stderr, "w", self.w
+        print >> sys.stderr, "x", x
+
         is_sv = label * np.sum(safe_sparse_dot(self.w, x)) < 1.0
         for i in range(len(self.w)):
             if is_sv:
                 self.w[i] = (1.0 - 1.0 / self.age) * self.w[i] + rate * label * x[i]
             else:
                 self.w[i] = (1.0 - 1.0 / self.age) * self.w[i]
+                
+        print >> sys.stderr, "after_w", self.w
 
     def predict(self, x):
         """
