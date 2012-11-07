@@ -59,26 +59,26 @@ class ClassCoder(json.JSONEncoder):
             result[u'__class__'] = obj.__class__.__name__
             return result
         
-        elif isinstance(obj, numpy.ndarray) and obj.ndim == 1:
-            return [x for x in obj]
+        elif isinstance(obj, numpy.ndarray):
+            return {'__class__':'ndarray', 'value': obj.tolist()}
         
         else:
             return json.JSONEncoder.default(self, obj)
 
     @classmethod
     def decode_class(cls, d):
-        if isinstance(d, dict) and '__class__' in d and d['__class__'] in \
-            ['GossipMessage', 'AdalinePerceptronModel', 'LogisticRegressionModel', 'P2PegasosModel']:
-
-            # Get the class, create object.
-            res = globals()[str(d['__class__'])]()
-
-            # Update class variables recursively.
-            for k, v in d.items():
-                if k != '__class__':
-                    res.__dict__[k] = cls.decode_class(v)
-
-            return res
-        else:
-            return d
+        if isinstance(d, dict) and '__class__' in d:
+            if d['__class__'] in ['GossipMessage', 'AdalinePerceptronModel', 'LogisticRegressionModel', 'P2PegasosModel', ]:
+                # Get the class, create object.
+                res = globals()[str(d['__class__'])]()
+    
+                # Update class variables recursively.
+                for k, v in d.items():
+                    if k != '__class__':
+                        res.__dict__[k] = cls.decode_class(v)
+    
+                return res
+            elif d['__class__'] == 'ndarray':
+                return numpy.array(d['value'])
+        return d
 
