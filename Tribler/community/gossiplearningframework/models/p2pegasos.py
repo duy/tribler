@@ -2,7 +2,7 @@ import numpy as np
 from models import GossipLearningModel
 
 if __debug__:
-    from Tribler.Core.dispersy.dprint import dprint
+    from Tribler.dispersy.dprint import dprint
 
 class P2PegasosModel(GossipLearningModel):
 
