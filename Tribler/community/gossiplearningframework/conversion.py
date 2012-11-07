@@ -1,6 +1,7 @@
 from struct import pack, unpack_from
 import copy
 import json
+import numpy
 
 from Tribler.dispersy.message import DropPacket
 from Tribler.dispersy.conversion import BinaryConversion
@@ -57,6 +58,10 @@ class ClassCoder(json.JSONEncoder):
             # Add the class name.
             result[u'__class__'] = obj.__class__.__name__
             return result
+        
+        elif isinstance(obj, numpy.ndarray) and obj.ndim == 1:
+            return [x for x in obj]
+        
         else:
             return json.JSONEncoder.default(self, obj)
 

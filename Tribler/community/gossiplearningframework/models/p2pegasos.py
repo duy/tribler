@@ -22,7 +22,7 @@ class P2PegasosModel(GossipLearningModel):
         lam = 0.0001
         rate = 1.0 / (self.age * lam)
 
-        is_sv = label * sum(self.w * x) < 1.0
+        is_sv = label * np.sum(self.w * x) < 1.0
         self.w = self.w * (1.0 - 1.0 / self.age)
         if is_sv:
             self.w = self.w + (rate * label * x)
@@ -32,7 +32,7 @@ class P2PegasosModel(GossipLearningModel):
         Compute the inner product of the hyperplane and the instance as a
         prediction.
         """
-        wx = sum(self.w * x)
+        wx = np.sum(self.w * x)
         return 1.0 if wx >= 0.0 else 0.0
 
     def merge(self, model):
