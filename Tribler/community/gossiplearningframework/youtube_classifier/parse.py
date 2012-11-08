@@ -5,7 +5,6 @@ import libxml2
 import pprint
 import codecs
 import json
-from Tribler.community.gossiplearningframework.youtube_classifier.features import PROJECT
 
 def parse(doc):
     ctxt = doc.xpathNewContext()
@@ -77,37 +76,39 @@ def parse(doc):
 
     return video, users
 
-def load_data():
-    path1 = PROJECT + "db/teachingdata.updated.set01-2012-10-10/"
-    path2 = PROJECT + "db/teachingdata.set02/"
+def load_data(basedir):
+    path1 = basedir + "db/teachingdata.updated.set01-2012-10-10/"
+    path2 = basedir + "db/teachingdata.set02/"
     videos = []
     users = {}
     reviews = []
     for path in [path1]:
         for fname in os.listdir(path):
-    #        print path + fname
-            data = codecs.open(path + fname, encoding='utf-8-sig').read().encode("utf-8")
-    #        print data.encode("utf-8")
-            doc = libxml2.parseDoc(data)
-            video, userlist = parse(doc)
-            doc.freeDoc()
+            if fname.endswith(".xml"):
+                #print path + fname
+                data = codecs.open(path + fname, encoding='utf-8-sig').read().encode("utf-8")
+                #print data.encode("utf-8")
+                doc = libxml2.parseDoc(data)
+                video, userlist = parse(doc)
+                doc.freeDoc()
 
-            videos.append(video)
-            users.update(userlist)
-            reviews += video['reviews']
+                videos.append(video)
+                users.update(userlist)
+                reviews += video['reviews']
     return videos, users, reviews
 
-def dump_data(videos, users, reviews, path):
+def dump_data(basedir, videos, users, reviews, path):
     """Dumps only the reviews into JSON format"""
-    with open(PROJECT + path, "w") as f:
+    with open(basedir + path, "w") as f:
         json.dump(reviews, f, sort_keys=True, indent=4)
 
 def main():
+    basedir = './'
     print "Loading data."
-    videos, users, reviews = load_data()
+    videos, users, reviews = load_data(basedir)
 
     print "Dumping data."
-    dump_data(videos, users, reviews, "db/comments.json")
+    dump_data(basedir, videos, users, reviews, "db/comments.json")
 
 if __name__ == "__main__":
     main()

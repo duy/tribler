@@ -15,6 +15,7 @@ from Tribler.dispersy.destination import CommunityDestination
 
 from conversion import JSONConversion
 import numpy as np
+import os
 from collections import deque
 
 from payload import MessagePayload, GossipMessage
@@ -26,6 +27,8 @@ from Tribler.community.gossiplearningframework.youtube_classifier.features impor
 from Tribler.community.gossiplearningframework.youtube_classifier.dict_vectorizer import DictVectorizer
 from Tribler.community.gossiplearningframework.database import GossipDatabase
 from traceback import print_exc
+import cPickle
+from Tribler import LIBRARYNAME
 
 # Send messages every 1 seconds.
 DELAY=1.0
@@ -61,6 +64,9 @@ class GossipLearningCommunity(Community):
         if __debug__: dprint('gossiplearningcommunity ' + self._cid.encode("HEX"))
         
         load_words()
+        
+        db_dir = os.path.join(LIBRARYNAME, 'community', 'gossiplearningframework', 'dictvectorizer.pickle')
+        self._dict_vectorizer = cPickle.load(open(db_dir, "rb"))
         
         self._database = GossipDatabase.get_instance(self._dispersy)
         
@@ -210,8 +216,7 @@ class GossipLearningCommunity(Community):
         2. Vectorize the feature dictionary using the deserialized
         DictVectorizer's transform function.
         """
-        v = DictVectorizer(sparse=False)
-        feats = v.fit_transform(feats)[0]
+        feats = self._dict_vectorizer.transform(feats)[0]
         
         """
         3. We need to update self._x and self._y. Make sure they are lists and not
@@ -248,8 +253,7 @@ class GossipLearningCommunity(Community):
         2. Vectorize the feature dictionary using the deserialized
         DictVectorizer's transform function (same as step 2 above).
         """
-        v = DictVectorizer(sparse=False)
-        feats = v.fit_transform(feats)[0]
+        feats = self._dict_vectorizer.transform(feats)[0]
         
         """
         3. Use self.predict(x) to predict for a vector x. The learning is done by
