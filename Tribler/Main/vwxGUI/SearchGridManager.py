@@ -1449,7 +1449,8 @@ class ChannelManager:
                 if isinstance(community, GossipLearningCommunity):
                     self._gossip_community = community
         
-        return self._gossip_community.predict_input(modification.value)
+        isSpam = self._gossip_community.predict_input(modification.value)
+        return 1.0 if isSpam else 0.0
     
     def _createModerations(self, hits):
         returnList = []
