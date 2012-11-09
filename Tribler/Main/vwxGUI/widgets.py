@@ -2239,6 +2239,6 @@ class HorizontalGradientGauge(wx.Panel):
         gc.DrawRectangle(0, 0, w-1, h-1)
         
         gc.SetPen(wx.Pen(wx.BLACK, 1, wx.SOLID))
-        x = (self.value / 100.0) * w
+        x = self.value * w
         gc.DrawLines([(x-1, 0), (x-1, h)])
         gc.DrawLines([(x+1, 0), (x+1, h)])

@@ -97,7 +97,7 @@ class GossipLearningCommunity(Community):
         # initmodel = AdalinePerceptronModel()
         # initmodel = LogisticRegressionModel()
         initmodel = P2PegasosModel()
-
+        self.update(initmodel)
         self._model_queue.append(initmodel)
 
     def initiate_meta_messages(self):
