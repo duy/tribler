@@ -13,6 +13,7 @@ LATEST_VERSION = 1
 
 schema = u"""
 CREATE TABLE input(
+ id INTEGER,
  x STRING,
  y INTEGER
  );

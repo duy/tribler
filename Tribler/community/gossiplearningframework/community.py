@@ -71,18 +71,26 @@ class GossipLearningCommunity(Community):
         self._database = GossipDatabase.get_instance(self._dispersy)
         
         # These should be loaded from a database, x and y are stored only locally
+        self._id = None
         self._x = None
         self._y = None
         
         try:
             nr_local_records = self._database.execute(u"SELECT count(*) FROM input").next()
             if nr_local_records[0]:
+                self._id = []
                 self._x = []
                 self._y = []
                 
-                for x, y in self._database.execute(u"SELECT x, y FROM input"):
-                    self._x.append(np.loads(str(x)))
-                    self._y.append(int(y))
+                for _id, x, y in self._database.execute(u"SELECT id, x, y FROM input"):
+                    try:
+                        feats = np.loads(str(x))
+                        self._id.append(_id)
+                        self._x.append(feats)
+                        self._y.append(int(y))
+                    except:
+                        print_exc()
+                        pass
         except:
             print_exc()
 
@@ -97,8 +105,10 @@ class GossipLearningCommunity(Community):
         # initmodel = AdalinePerceptronModel()
         # initmodel = LogisticRegressionModel()
         initmodel = P2PegasosModel()
-        self.update(initmodel)
         self._model_queue.append(initmodel)
+        
+        if self._x and self._y:
+            self.update(initmodel)
 
     def initiate_meta_messages(self):
         """Define the messages we will be using."""
@@ -200,9 +210,10 @@ class GossipLearningCommunity(Community):
         """Predict with the last model in the queue."""
         return self._model_queue[-1].predict(x)
 
-    def user_input(self, is_spam, text):
+    def user_input(self, _id, is_spam, text):
         """Train the system from user input"""
         assert isinstance(is_spam, bool)
+        assert isinstance(_id, (int, long))
         assert isinstance(text, unicode)
 
         """
@@ -224,6 +235,8 @@ class GossipLearningCommunity(Community):
         script.py).
         """
         
+        if self._id == None:
+            self._id = []
         if self._x == None:
             self._x = []
         if self._y == None:
@@ -234,10 +247,18 @@ class GossipLearningCommunity(Community):
         are consistent with that of loaded in script.py. self._x should be a list
         of lists of floats. self._y should be a list of ints.
         """
-        self._x.append(feats)
-        self._y.append(1 if is_spam else 0)
-        
-        self._database.execute(u"INSERT INTO input (x, y) VALUES (?, ?)",(buffer(feats.dumps()), 1 if is_spam else 0))
+        if _id in self._id:
+            index = self._id.index(_id)
+            self._x[index] = feats
+            self._y[index] = 1 if is_spam else 0
+            self._database.execute(u"UPDATE input SET x = ? AND y = ? WHERE id = ?",(buffer(feats.dumps()), 1 if is_spam else 0, _id))
+        else:
+            self._id.append(_id)
+            self._x.append(feats)
+            self._y.append(1 if is_spam else 0)
+            self._database.execute(u"INSERT INTO input (id, x, y) VALUES (?, ?, ?)",(_id, buffer(feats.dumps()), 1 if is_spam else 0))
+            
+        self.update(self._model_queue[-1])
         
     def predict_input(self, text):
         """Returns True if TEXT is spam"""

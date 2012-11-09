@@ -691,7 +691,7 @@ class ChannelCommunity(Community):
                 channeltorrentDict[modifying_dispersy_id] = channeltorrent_id
                 
                 if modification_type in ['name', 'description']:
-                    self._gossip_community.user_input(False, modification_value)
+                    self._gossip_community.user_input(dispersy_id, False, modification_value)
                 
             elif message_name == u"playlist":
                 playlist_id = self._get_playlist_id_from_message(modifying_dispersy_id)
@@ -997,7 +997,7 @@ class ChannelCommunity(Community):
                     updateTorrent = True
                     
                 if modification_type in ['name', 'description']:
-                    self._gossip_community.user_input(True, modification_value)
+                    self._gossip_community.user_input(cause, True, modification_value)
                 
             self._channelcast_db.on_moderation(self._channel_id, dispersy_id, peer_id, by_peer_id, cause, message.payload.text, message.payload.timestamp, message.payload.severity)
             
