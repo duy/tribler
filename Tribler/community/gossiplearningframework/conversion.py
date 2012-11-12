@@ -21,8 +21,9 @@ class JSONConversion(BinaryConversion):
         self.define_meta_message(chr(1), community.get_meta_message(u"modeldata"), self._encode_json, self._decode_json)
 
     def _encode_json(self, message):
-        dprint(type(message.payload.message))
-        dprint(message.payload.message)
+        if __debug__:
+            dprint(type(message.payload.message))
+            dprint(message.payload.message)
         assert isinstance(message.payload.message, GossipMessage)
         wiredata = json.dumps(message.payload.message, cls=ClassCoder).encode("UTF-8")
 
