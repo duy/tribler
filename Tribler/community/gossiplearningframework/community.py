@@ -96,9 +96,6 @@ class GossipLearningCommunity(Community):
 
         # Stats
         self._msg_count = 0
-
-        # Periodically we will send our data to other node(s).
-        self._dispersy.callback.register(self.active_thread, delay=INITIALDELAY)
         self._model_queue = deque(maxlen=MODEL_QUEUE_SIZE)
 
         # Initial model
@@ -106,6 +103,9 @@ class GossipLearningCommunity(Community):
         # initmodel = LogisticRegressionModel()
         initmodel = P2PegasosModel()
         self._model_queue.append(initmodel)
+        
+        # Periodically we will send our data to other node(s).
+        self._dispersy.callback.register(self.active_thread, delay=INITIALDELAY)
         
         if self._x and self._y:
             self.update(initmodel)
