@@ -153,10 +153,14 @@ class ChannelCommunity(Community):
             from Tribler.community.allchannel.community import ChannelCastDBStub
             self._channelcast_db = ChannelCastDBStub(self._dispersy)
         
+        self._gossip_community = None
+        self.find_gossip_community()
+    
+    def find_gossip_community(self):
         for community in self.dispersy.get_communities():
             if isinstance(community, GossipLearningCommunity):
                 self._gossip_community = community
-        
+                  
     def initiate_meta_messages(self):
         if self.integrate_with_tribler:
             batch_delay = 3.0
@@ -691,6 +695,8 @@ class ChannelCommunity(Community):
                 channeltorrentDict[modifying_dispersy_id] = channeltorrent_id
                 
                 if modification_type in ['name', 'description']:
+                    if self._gossip_community == None:
+                        self.find_gossip_community()
                     self._gossip_community.user_input(dispersy_id, False, modification_value)
                 
             elif message_name == u"playlist":
@@ -997,6 +1003,8 @@ class ChannelCommunity(Community):
                     updateTorrent = True
                     
                 if modification_type in ['name', 'description']:
+                    if self._gossip_community == None:
+                        self.find_gossip_community()
                     self._gossip_community.user_input(cause, True, modification_value)
                 
             self._channelcast_db.on_moderation(self._channel_id, dispersy_id, peer_id, by_peer_id, cause, message.payload.text, message.payload.timestamp, message.payload.severity)
